@@ -1,79 +1,100 @@
-# Rapid Kindling Protocol Automation (Arduino-Based)
+# ⚡ Rapid Kindling Protocol Automation (Arduino + RTC-Based)
 
-This repository contains the code and documentation for automating the **rapid kindling protocol (RK)** used to induce epileptogenesis in rodent models, based on well-established methodologies in neuroscience research.
+This repository contains firmware and documentation for automating the **rapid kindling protocol (RK)** used to induce epileptogenesis in rodent models. Unlike versions relying on internal timers, this implementation uses an **external RTC module (DS3231)** to ensure precision over extended durations.
 
 ## 🧠 Overview
 
-The RK protocol consists of controlled electrical stimulation applied to the **basolateral amygdala (BLA)** using implanted electrodes. This Arduino-based script initiates a stimulation sequence that matches experimental timelines described in:
+Electrical stimulation is applied to the **basolateral amygdala (BLA)** via implanted electrodes. The Arduino system triggers a stimulation relay at preset intervals consistent with published protocols:
 
-- Álvarez-Ferradas et al., 2015  
-- Morales et al., 2014  
+- Álvarez-Ferradas et al., *Neurobiology of Disease*, 2015  
+- Morales et al., *Frontiers in Cellular Neuroscience*, 2014  
 
-The device displays real-time feedback via an LCD screen, allows manual control via a push button, and activates a digital output pin connected to an external stimulator at specific intervals over several hours.
+A 16x2 I2C LCD screen provides real-time feedback, while a momentary push-button enables manual initiation and cancellation. Precise timing is driven by real-time clock readings, mitigating drift across long protocols.
 
 ## 🔧 Hardware Requirements
 
-- **Arduino Uno or compatible board**  
+- **Arduino Uno or Mega 2560**  
+- **DS3231 Real-Time Clock (RTC)**  
 - **I2C LCD Display (16x2, address 0x27)**  
-- **Momentary push button (connected to pin 2)**  
-- **Output relay or pulse generator interface (connected to pin 3)**  
-- Optional: Housing, electrodes, data logger
+- **Momentary push button** (connected to D2)  
+- **stimulation trigger interface (BNC female conector)** (connected to D3)  
+- Optional: buzzer, opto-isolators, SD logger
 
 ## ⏱️ Protocol Timing
 
-The stimulation pin is activated for 10 seconds at these precise time points:
+Stimulation occurs in 10-second bursts at specific intervals after protocol initiation:
 
-| Time | Event             |
-|------|-------------------|
-| 00:20:00 | Stimulation 1 |
-| 01:00:00 | Stimulation 2 |
-| 01:40:00 | Stimulation 3 |
-| 02:20:00 | Stimulation 4 |
-| 03:00:00 | Stimulation 5 |
-| 03:40:00 | Stimulation 6 |
+| Time (hh:mm:ss) | Stimulation Event |
+|------------------|-------------------|
+| 00:20:00         | Stimulus 1        |
+| 01:00:00         | Stimulus 2        |
+| 01:40:00         | Stimulus 3        |
+| 02:20:00         | Stimulus 4        |
+| 03:00:00         | Stimulus 5        |
+| 03:40:00         | Stimulus 6        |
 
-These intervals replicate the RK pattern used to generate **after-discharges (ADs)** and progressively induce seizure activity in kindled subjects.
+
+This timeline replicates the RK pattern designed to induce **after-discharges (ADs)** and progressive seizure activity. Timekeeping is maintained via DS3231, and outputs are driven with millisecond-level resolution.
 
 ## 💡 Features
 
-- Manual start and cancel options via button interface  
-- Chronometer display with real-time updates  
-- Visual feedback for stimulation status  
-- Simple and adaptable codebase using `FlexiTimer2` for timing logic
+- Manual start via push-button interface  
+- Cancel at any time during the protocol  
+- Chronometer-style display of elapsed time  
+- Status feedback for each stimulation pulse  
+- RTC-based timing avoids microcontroller drift over hours  
+- Scalable and modifiable for extended paradigms
 
-## 📚 Scientific Context
+## 📐 Wiring Overview
 
-This project is inspired by experimental protocols designed to model **epileptogenesis** in vivo. Fully kindled animals display generalized seizures and ADs detectable via EEG. The code provides a timing scaffold for interfacing with commercial or custom stimulation devices.
+| Component             | Function                             | Arduino Pin |
+|----------------------|--------------------------------------|-------------|
+| 🔘 Push Button        | Start/cancel protocol                | D2          |
+| ⚡ Stimulation Trigger| Sends HIGH pulse to stim device      | D3          |
+| ⏰ DS3231 RTC         | Maintains absolute time              | SDA/SCL     |
+| 🖥️ I2C LCD            | Displays time and status             | SDA/SCL     |
+
+### Notes:
+- **Button debounce** is handled via `delay(25)` cycles.
+- The stimulation logic uses second-based comparisons between RTC values.
+- For enhanced feedback, a buzzer or LED could be triggered alongside the relay.
+
+## 🧬 Scientific Context
+
+This setup supports behavioral and electrophysiological studies of **epileptogenesis** by standardizing stimulation delivery. It can be extended to interface with ABF-based data loggers, optogenetic trigger modules, or synchronized EEG acquisition.
 
 ## ✅ Ethical Compliance
 
-All experimental procedures described in this repository were **reviewed and approved by the Bioethics Committee of the University of Valparaíso**, Chile. The protocol adheres to institutional guidelines and international standards for the ethical treatment of laboratory animals.
+All procedures comply with **ethical guidelines** approved by the Bioethics Committee of the University of Valparaíso. This includes:
 
-Approval confirms that:
-- The research design minimizes animal suffering and distress  
-- The use of kindling models is scientifically justified  
-- All personnel involved are trained in ethical and humane practices  
-- The study complies with the principles outlined in the Declaration of Helsinki and relevant national regulations
-
+- Minimizing animal discomfort  
+- Scientific justification for kindling protocols  
+- Trained personnel for humane handling  
+- Adherence to international animal research standards
 
 ## 📄 License
 
-This project is licensed under the MIT License — feel free to use, modify, and expand it for educational or research purposes.
+This repository is shared under the **MIT License**. Feel free to modify, reuse, and extend it for educational or research use.
 
 ## 🤝 Contributions
 
-Pull requests and community feedback are welcome. You can contribute by:
-- Enhancing timing precision using hardware timers or RTC modules  
-- Integrating data logging features  
-- Porting to other microcontroller platforms  
-- Sharing alternative protocol implementations or experimental data
+You’re welcome to help improve this project by:
+- Refactoring timing logic for interrupt-based routines  
+- Integrating multi-channel stimulation  
+- Adding data logging or cloud sync features  
+- Porting to microcontrollers like Teensy or ESP32  
+- Sharing use cases and experimental datasets
 
 ## 📎 References
-- Martorell et al., Neurobiology of Disease, 2020
-- Álvarez-Ferradas et al., Neurobiology of Disease, 2015  
-- Morales et al., Frontiers in Cellular Neuroscience, 2014
 
-## 👨‍🔬 Credits  
-Developed by **Felipe Guiffa Gomez felipe.guiffa@postgrado.uv.cl **, Chile.
+- Álvarez-Ferradas et al., Neurobiology of Disease, 2015  
+- Morales et al., Front. Cell. Neurosci., 2014  
+- Martorell et al., Neurobiology of Disease, 2020  
+
+---
+
+👨‍🔬 Developed by **Felipe Guiffa Gómez**  
+📧 felipe.guiffa@postgrado.uv.cl  
+🌍 Valparaíso, Chile
 
 
