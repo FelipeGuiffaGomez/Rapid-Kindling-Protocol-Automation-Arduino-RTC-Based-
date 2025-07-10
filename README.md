@@ -60,6 +60,9 @@ Pull requests and community feedback are welcome. You can contribute by:
 ## 📎 References
 - Martorell et al., Neurobiology of Disease, 2020
 - Álvarez-Ferradas et al., Neurobiology of Disease, 2015  
-- Morales et al., Frontiers in Cellular Neuroscience, 2014  
+- Morales et al., Frontiers in Cellular Neuroscience, 2014
+
+## 👨‍🔬 Credits  
+Developed by **Felipe Guiffa Gomez felipe.guiffa@postgrado.uv.cl **, Chile.
 
 
