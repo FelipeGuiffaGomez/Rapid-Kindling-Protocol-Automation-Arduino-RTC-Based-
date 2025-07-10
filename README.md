@@ -45,6 +45,17 @@ These intervals replicate the RK pattern used to generate **after-discharges (AD
 
 This project is inspired by experimental protocols designed to model **epileptogenesis** in vivo. Fully kindled animals display generalized seizures and ADs detectable via EEG. The code provides a timing scaffold for interfacing with commercial or custom stimulation devices.
 
+## ✅ Ethical Compliance
+
+All experimental procedures described in this repository were **reviewed and approved by the Bioethics Committee of the University of Valparaíso**, Chile. The protocol adheres to institutional guidelines and international standards for the ethical treatment of laboratory animals.
+
+Approval confirms that:
+- The research design minimizes animal suffering and distress  
+- The use of kindling models is scientifically justified  
+- All personnel involved are trained in ethical and humane practices  
+- The study complies with the principles outlined in the Declaration of Helsinki and relevant national regulations
+
+
 ## 📄 License
 
 This project is licensed under the MIT License — feel free to use, modify, and expand it for educational or research purposes.
