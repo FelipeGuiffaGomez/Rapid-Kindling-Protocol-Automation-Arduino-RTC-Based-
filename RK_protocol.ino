@@ -2,78 +2,96 @@
 
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
-#include <FlexiTimer2.h>
+#include <DS3231.h>
+
+DS3231  rtc;
 
 // Set the LCD address to 0x27 for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x27, 16, 2);
-int hora,minu,seg;
-boolean r,x,y,z,sw;
+
+boolean z,y,sw,r,x;
 String tiempo,h,m,s;
 
 const int buttonPin = 2;
 const int r1 = 3;
 
+byte time[7];   // Temp buffer used to hold BCD time/date values
+char buf[12];   // Buffer used to convert time[] values to ASCII strings
 
-void flash()
-{
-x=0;
+uint32_t  time_now=0;
+uint32_t  time_new=0;
+uint32_t  temp1;
+
+
+
+void setup(){
+	// initialize the LCD
+	pinMode(buttonPin, INPUT);
+	pinMode(r1, OUTPUT);
+	
+	lcd.init();
+
+	// Turn on the blacklight and print a message.
+	lcd.backlight();
+	lcd.print("Arduino Chile");
+	delay(2000);
+  	
 }
 
 
-void setup()
-{
-  // initialize the LCD
-  pinMode(buttonPin, INPUT);
-  pinMode(r1, OUTPUT);
+void loop(){
+	uint16_t h;
+	uint8_t m,s;
+	
+	rtc.getDateTime(time);
 
-  
-  lcd.begin();
+	if(z==1&&digitalRead(buttonPin)==1){while(digitalRead(buttonPin)==1){delay(25);}z=0;y=0;}
+	if(y==0){lcd.clear();lcd.print("Pulse for start");y=1;sw=0;}
+	if(digitalRead(buttonPin)==1&&sw==0){while(digitalRead(buttonPin)==1){delay(25);} time_now = rtc.timeToSeconds(time);x=0; lcd.clear();lcd.print("Wait R1");sw=1;r=1;}
 
-  // Turn on the blacklight and print a message.
-  lcd.backlight();
-  lcd.print("Kindking Machine");lcd.setCursor(1,1);lcd.print("Neuron Effects");
-  delay(3000);
-  
-  FlexiTimer2::set(1000, flash); // MsTimer2 style is also supported
-  
+	time_new = rtc.timeToSeconds(time);
+	
+	if(x==0&&sw==1){
+		if(time_new == time_now + 1200)		{digitalWrite(r1,HIGH);	lcd.setCursor(0,0); lcd.print("              ");	lcd.setCursor(8,0);lcd.print("rele ON ");}
+		if(time_new == time_now + 1210)		{digitalWrite(r1,LOW);	lcd.setCursor(0,0); lcd.print("Wait R2");			lcd.setCursor(8,0);lcd.print("rele OFF");}
+		if(time_new == time_now + 3600)		{digitalWrite(r1,HIGH);	lcd.setCursor(0,0); lcd.print("              ");	lcd.setCursor(8,0);lcd.print("rele ON ");}
+		if(time_new == time_now + 3610)		{digitalWrite(r1,LOW);	lcd.setCursor(0,0); lcd.print("Wait R3");			lcd.setCursor(8,0);lcd.print("rele OFF");}
+		if(time_new == time_now + 6000)		{digitalWrite(r1,HIGH);	lcd.setCursor(0,0); lcd.print("              ");	lcd.setCursor(8,0);lcd.print("rele ON ");}
+		if(time_new == time_now + 6010)		{digitalWrite(r1,LOW);	lcd.setCursor(0,0); lcd.print("Wait R4");			lcd.setCursor(8,0);lcd.print("rele OFF");}
+		if(time_new == time_now + 8400)		{digitalWrite(r1,HIGH);	lcd.setCursor(0,0); lcd.print("              ");	lcd.setCursor(8,0);lcd.print("rele ON ");}
+		if(time_new == time_now + 8410)		{digitalWrite(r1,LOW);	lcd.setCursor(0,0); lcd.print("Wait R5");			lcd.setCursor(8,0);lcd.print("rele OFF");}
+		if(time_new == time_now + 10800)	{digitalWrite(r1,HIGH);	lcd.setCursor(0,0); lcd.print("              ");	lcd.setCursor(8,0);lcd.print("rele ON ");}
+		if(time_new == time_now + 10810)	{digitalWrite(r1,LOW);	lcd.setCursor(0,0); lcd.print("Wait R6");			lcd.setCursor(8,0);lcd.print("rele OFF");}
+		if(time_new == time_now + 13200)	{digitalWrite(r1,HIGH);	lcd.setCursor(0,0); lcd.print("              ");	lcd.setCursor(8,0);lcd.print("rele ON ");}
+		if(time_new == time_now + 13210)	{digitalWrite(r1,LOW);	lcd.setCursor(0,0); lcd.print("Fin de protocolo");	z=1;}
+	}
+
+	lcd.setCursor(0, 1);
+	lcd.print(rtc.timeToString(time, buf));
+
+	lcd.setCursor(9, 1);
+	temp1 = time_new-time_now;
+	secondsToHMS(temp1, h,m,s);
+	lcd.print(h,DEC);
+	lcd.print(":");
+	lcd.print(m,DEC);
+	lcd.print(":");
+	lcd.print(s,DEC);
+	
+	if(digitalRead(buttonPin)==1&&r==1){
+		r=0;
+		lcd.clear();lcd.print("cancelado");
+		while(digitalRead(buttonPin)==1){delay(25);}
+		digitalWrite(r1,LOW);y=0;
+	}
 }
 
-void loop()
+void secondsToHMS( const uint32_t seconds, uint16_t &h, uint8_t &m, uint8_t &s )
 {
-  if(z==1&&digitalRead(buttonPin)==1){while(digitalRead(buttonPin)==1){delay(25);}z=0;y=0;}
-  if(y==0){lcd.clear();lcd.print("   Pulse para");lcd.setCursor(4,1);lcd.print("iniciar");y=1;sw=0;}
-  if(digitalRead(buttonPin)==1&&sw==0){while(digitalRead(buttonPin)==1){delay(25);}hora=0;minu=0;seg=0;FlexiTimer2::start();lcd.clear();lcd.print("Esperando EST 1");sw=1;r=1;}
-  
-  
-  if(x==0&&sw==1){
-    
-    if(hora==0&&minu==20&&seg==0){digitalWrite(r1,HIGH);lcd.setCursor(0,0);lcd.print("              ");lcd.setCursor(0,0);lcd.print("ESTIMULANDO!");}
-    if(hora==0&&minu==20&&seg==10){digitalWrite(r1,LOW);lcd.setCursor(0,0);lcd.print("Esperando EST 2");}
-    if(hora==1&&minu==0&&seg==0){digitalWrite(r1,HIGH);lcd.setCursor(0,0);lcd.print("              ");lcd.setCursor(0,0);lcd.print("ESTIMULANDO!");}
-    if(hora==1&&minu==0&&seg==10){digitalWrite(r1,LOW);lcd.setCursor(0,0);lcd.print("Esperando EST 3");}
-    if(hora==1&&minu==40&&seg==0){digitalWrite(r1,HIGH);lcd.setCursor(0,0);lcd.print("              ");lcd.setCursor(0,0);lcd.print("ESTIMULANDO!");}
-    if(hora==1&&minu==40&&seg==10){digitalWrite(r1,LOW);lcd.setCursor(0,0);lcd.print("Esperando EST 4");}
-    if(hora==2&&minu==20&&seg==0){digitalWrite(r1,HIGH);lcd.setCursor(0,0);lcd.print("              ");lcd.setCursor(0,0);lcd.print("ESTIMULANDO!");}
-    if(hora==2&&minu==20&&seg==10){digitalWrite(r1,LOW);lcd.setCursor(0,0);lcd.print("Esperando EST 5");}
-    if(hora==3&&minu==00&&seg==0){digitalWrite(r1,HIGH);lcd.setCursor(0,0);lcd.print("              ");lcd.setCursor(0,0);lcd.print("ESTIMULANDO!");}
-    if(hora==3&&minu==00&&seg==10){digitalWrite(r1,LOW);lcd.setCursor(0,0);lcd.print("Esperando EST 6");}
-    if(hora==3&&minu==40&&seg==00){digitalWrite(r1,HIGH);lcd.setCursor(0,0);lcd.print("              ");lcd.setCursor(0,0);lcd.print("ESTIMULANDO!");}
-    if(hora==3&&minu==40&&seg==10){digitalWrite(r1,LOW);lcd.setCursor(0,0);lcd.print("Fin de protocolo");FlexiTimer2::stop();z=1;}
-    
-  x=1;h=hora;m=minu;s=seg;
-  tiempo=h+":"+m+":"+s;
-  lcd.setCursor(0, 1);lcd.print("        ");lcd.setCursor(0, 1);lcd.print(tiempo);
-  seg++;
-  if(seg==60){seg=0;minu++;if(minu==59){minu=0;hora++;}}
-  }
-
-  if(digitalRead(buttonPin)==1&&r==1){
-    r=0;FlexiTimer2::stop();
-    lcd.clear();lcd.print("Cancelado");
-    while(digitalRead(buttonPin)==1){delay(25);}
-    digitalWrite(r1,LOW);y=0;
-    
-    }
-  
-  
+	uint32_t t = seconds;
+	s = t % 60;
+	t = (t - s)/60;
+	m = t % 60;
+	t = (t - m)/60;
+	h = t;
 }
